@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Range of Games</title>
+
+    <link rel="icon" type="image/x-icon" href="icon.jpg">
+
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --panel-bg: rgba(26, 26, 26, 0.9);
+            --border-color: #313131;
+            --accent-orange: #fc7742;
+            --accent-cyan: #4ef5fa;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1c1c1c 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 460px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
+            padding: 35px 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--accent-orange);
+            box-shadow: 0 0 10px var(--accent-orange);
+        }
+
+        .main-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 14px;
+        }
+
+        .avatar-border {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--text-main), var(--text-main), var(--text-main));
+            background-size: 200% 200%;
+            animation: smoothGlow 4s ease infinite;
+            z-index: 1;
+        }
+
+        @keyframes smoothGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .avatar-img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            border: 3px solid #1a1a1a;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #ffffff;
+        }
+
+        .badge {
+            margin-top: 6px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-cyan);
+            background: rgba(78, 245, 250, 0.1);
+            padding: 4px 12px;
+            border: 1px solid rgba(78, 245, 250, 0.25);
+            border-radius: 20px;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(49, 49, 49, 0.4);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: border-color 0.25s ease, background-color 0.25s ease;
+            overflow: hidden;
+        }
+
+        .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Значки PNG */
+        .brand-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .game-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-orange);
+            opacity: 0.7;
+            transition: width 0.25s ease, opacity 0.25s ease;
+            z-index: 0;
+        }
+
+        .link-card:hover {
+            border-color: var(--accent-orange);
+            background: rgba(49, 49, 49, 0.7);
+        }
+
+        .link-card:hover::before {
+            width: 100%;
+            opacity: 0.12;
+        }
+
+        .link-card.secondary::before {
+            background: var(--accent-cyan);
+        }
+
+        .link-card.secondary:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        /* Секция социальных сетей */
+        .socials {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: rgba(49, 49, 49, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .social-btn img {
+            width: 27px;
+            height: 27px;
+            object-fit: contain;
+        }
+
+        .social-btn:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(78, 245, 250, 0.1);
+            transform: translateY(-2px);
+        }
+
+        footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover {
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="main-container">
+        
+        <div class="profile-header">
+            <div class="avatar-wrapper">
+                <div class="avatar-border"></div>
+                <img src="icon.jpg" alt="Logo" class="avatar-img">
+            </div>
+            <h1>Range of Games</h1>
+            <div class="badge">Страница разработчика</div>
+        </div>
+
+        <!-- Секция: Прямые ссылки на игры -->
+        <div class="section-title">Наши Игры</div>
+        <div class="links">
+            <a href="https://play.google.com/store/apps/details?id=com.solar2d.app.Test_DC" target="_blank" class="link-card secondary">
+                <div class="btn-content">
+                    <img src="icons/digital_creator_icon.png" alt="Game 1" class="game-icon">
+                    <span>Digital Creator: Phone Tycoon</span>
+                </div>
+                <span style="color: var(--accent-cyan); z-index: 1;">➔</span>
+            </a>
+
+            <a href="https://play.google.com/store/apps/details?id=com.solar2d.app.Car_Creator" target="_blank" class="link-card secondary">
+                <div class="btn-content">
+                    <img src="icons/car_creator_icon.png" alt="Game 2" class="game-icon">
+                    <span>Car Creator</span>
+                </div>
+                <span style="color: var(--accent-cyan); z-index: 1;">➔</span>
+            </a>
+        </div>
+
+        <!-- Секция: Почта -->
+        <div class="section-title">Поддержка</div>
+        <div class="links">
+            <a href="mailto:rangeofgames.dev@gmail.com" class="link-card">
+                <div class="btn-content">
+                    <img src="icons/mail_icon.png" class="brand-icon">
+                    <span>Идеи и предложения присылайте на почту rangeofgames.dev@gmail.com</span>
+                </div>
+                <span style="color: var(--accent-orange); z-index: 1;">➔</span>
+            </a>
+        </div>
+
+        <!--  Секция: Социальные сети -->
+        <div class="socials">
+            <a href="https://t.me/carcreatordev" target="_blank" class="social-btn" title="Telegram">
+                <img src="icons/telegram_logo.png" alt="Telegram">
+            </a>
+            <a href="https://vk.ru/digital_creator_phone_tycoon" target="_blank" class="social-btn" title="VKontakte">
+                <img src="icons/vk_logo.png" alt="VK">
+            </a>
+        </div>
+
+        <footer>
+            <span>© 2026 Range of Games</span>
+        </footer>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2.5 + 1.2,
+                color: Math.random() > 0.5 ? '#fc7742' : '#4ef5fa'
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                let p1 = particles[i];
+                p1.x += p1.vx;
+                p1.y += p1.vy;
+
+                if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+                if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+
+                ctx.fillStyle = p1.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = p1.color;
+                ctx.beginPath();
+                ctx.arc(p1.x, p1.y, p1.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dx = p1.x - p2.x;
+                    let dy = p1.y - p2.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 140) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = p1.color;
+                        ctx.globalAlpha = (1 - dist / 140) * 0.55;
+                        ctx.lineWidth = 1.1;
+                        ctx.stroke();
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
